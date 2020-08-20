@@ -53,6 +53,12 @@
         </dependency>
 
 
+        <!-- https://mvnrepository.com/artifact/software.amazon.awscdk/apigateway -->
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>apigateway</artifactId>
+            <version>1.47.0</version>
+        </dependency>
 
     </dependencies>
 </project>

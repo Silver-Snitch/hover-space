@@ -1,5 +1,8 @@
 package com.myorg;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +13,11 @@ import software.amazon.awscdk.core.StackProps;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.apigateway.MethodOptions;
+import software.amazon.awscdk.services.apigateway.MethodResponse;
+import software.amazon.awscdk.services.apigateway.RestApi;
+import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.apigateway.LambdaIntegration;
 
 public class HoverSpaceStack extends Stack {
     public HoverSpaceStack(final Construct parent, final String id) {
@@ -19,15 +27,16 @@ public class HoverSpaceStack extends Stack {
     public HoverSpaceStack(final Construct parent, final String id, final StackProps props) {
         super(parent, id, props);
 
-        // iam for dynamo access
-        // Role role = Role.Builder.create(this, "Endpoint").build();
-        // List<String> actions = new ArrayList<>();
-        // actions.add("AmazonDynamoDBFullAccess");
-        // actions.add("AWSLambdaBasicExecutionRole");
-        // PolicyStatement policyStatement =
-        // PolicyStatement.Builder.create().actions(actions).build();
-        // role.addToPolicy(policyStatement);
+        String databaseArn="arn:aws:dynamodb:ap-south-1:584832312317:table/hoverSpaceData"; //Arn of hoverSpaceData table, this needs to be changed if we change the db
 
+        // iam for dynamo access
+        PolicyStatement initialPolicyWrite = new PolicyStatement();
+        initialPolicyWrite.addActions("dynamodb:UpdateItem","dynamodb:PutItem","dynamodb:DeleteItem");
+        initialPolicyWrite.addResources(databaseArn);   
+        PolicyStatement initialPolicyRead = new PolicyStatement();
+        initialPolicyRead.addActions("dynamodb:GetItem","dynamodb:BatchGetItem");
+        initialPolicyRead.addResources(databaseArn);
+        
         Map<String, String> environment = new HashMap<String,String>();
         environment.put("TABLE_NAME", "hoverSpaceData");
         // Stack will have 2 lamdas to read and write to dynamo respectively
@@ -37,6 +46,7 @@ public class HoverSpaceStack extends Stack {
         .handler("read.handler")
         .memorySize(1024)
         .timeout(Duration.minutes(1))
+        .initialPolicy(Arrays.asList(initialPolicyRead))
         .environment(environment)
         .build();
 
@@ -46,12 +56,35 @@ public class HoverSpaceStack extends Stack {
         .handler("write.handler")
         .memorySize(1024)
         .timeout(Duration.minutes(1))
+        .initialPolicy(Arrays.asList(initialPolicyWrite))
+        .environment(environment)
         .build();
 
-        //Lambdas will be accessed by api gateway (with auth)
-        //Downstream includes just dyanamo for now
+
+        Function authFunction = Function.Builder.create(this, "authLambda")
+        .runtime(Runtime.NODEJS_10_X)
+        .code(Code.fromAsset("lambda"))
+        .handler("auth.handler")
+        .memorySize(1024)
+        .timeout(Duration.minutes(1))
+        .build();
 
         
+        //can the following code be refactored? Yes. Will I refactor it? Maybe.
+        //Endpoint won't work right now because the returned response is not compatible with apig (for now)
 
+        RestApi restApi = RestApi.Builder.create(this, "writeEndpoint").build();
+        final List<MethodResponse> methodResponses = new ArrayList<>();
+        methodResponses.add(MethodResponse.builder()
+                .statusCode("200")
+                .build());
+
+        restApi.getRoot()
+        .addMethod("POST", LambdaIntegration.Builder
+                        .create(writeFunction)
+                        .build(),
+                MethodOptions.builder()
+                        .methodResponses(methodResponses)
+                        .build());
     }
 }

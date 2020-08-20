@@ -1,9 +1,22 @@
+var AWS = require('aws-sdk');
+var ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+
 exports.handler = async function(event) {
-    const tableName = process.env.TABLE_NAME;
-    console.log("request:", JSON.stringify(event, undefined, 2));
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "text/plain" },
-      body: `Hello, Write function invoked on table `+tableName
+    
+  const tableName = process.env.TABLE_NAME;
+  var params = {
+    TableName: tableName,
+    Item: {
+        user: { S: event.user },
+        url: { S: event.url },
+        note: { S: event.note }
+      }
     };
+  await ddb.putItem(params).promise();
+  return {
+    statusCode: 204,
+    headers: {},
+    body: JSON.stringify({})
   };
+    
+}
