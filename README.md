@@ -9,3 +9,13 @@ Useful commands
  * `cdk synth`       emits the synthesized CloudFormation template
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
+
+
+TODO:
+Refactor components/Signup.js
+Refactor components/Account.js
+Figure out exception thrown by getSession
+
+Testing:
+Use real emails for signin page
+Keep the console open (Not displaying errors/messages to front end as of now)
