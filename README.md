@@ -12,10 +12,10 @@ Useful commands
 
 
 TODO:
-Refactor components/Signup.js
-Refactor components/Account.js
-Figure out exception thrown by getSession
+ * Refactor components/Signup.js
+ * Refactor components/Account.js
+ * Figure out exception thrown by getSession
 
 Testing:
-Use real emails for signin page
-Keep the console open (Not displaying errors/messages to front end as of now)
+ * Use real emails for signin page
+ * Keep the console open (Not displaying errors/messages to front end as of now)
