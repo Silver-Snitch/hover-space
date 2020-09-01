@@ -14,9 +14,11 @@ exports.handler = async function(event) {
     };
   await ddb.putItem(params).promise();
   return {
-    statusCode: 204,
-    headers: {},
+    statusCode: 200,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    isBase64Encoded: false,
     body: JSON.stringify({})
   };
-    
 }

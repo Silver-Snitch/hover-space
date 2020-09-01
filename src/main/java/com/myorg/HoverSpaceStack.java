@@ -72,18 +72,22 @@ public class HoverSpaceStack extends Stack {
         
         //can the following code be refactored? Yes. Will I refactor it? Maybe.
         //Endpoint won't work right now because the returned response is not compatible with apig (for now)
+        
+        final RestApi api = RestApi.Builder
+        .create(this, "writeEndpoint")
+        .build();
 
-        RestApi restApi = RestApi.Builder.create(this, "writeEndpoint").build();
         final List<MethodResponse> methodResponses = new ArrayList<>();
         methodResponses.add(MethodResponse.builder()
-                .statusCode("200")
-                .build());
+        .statusCode("200")
+        .build());
 
-        restApi.getRoot()
+        api.getRoot()
+        .addResource("data")
         .addMethod("POST", LambdaIntegration.Builder
                         .create(writeFunction)
                         .build(),
-                MethodOptions.builder()
+                        MethodOptions.builder()
                         .methodResponses(methodResponses)
                         .build());
     }
