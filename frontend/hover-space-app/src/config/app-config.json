@@ -1,7 +1,0 @@
-{
-    "region": "ap-south-1",
-    "userPool": "ap-south-1_MgflQpQfP",
-    "userPoolBaseUri": "http://localhost:3000/",
-    "clientId": "32pls1rrpog1rbkj7kkeumbk0q",
-    "apiUri": "http://localhost:3000/"
-}
