@@ -39,6 +39,7 @@ public class HoverSpaceStack extends Stack {
         
         Map<String, String> environment = new HashMap<String,String>();
         environment.put("TABLE_NAME", "hoverSpaceData");
+        
         // Stack will have 2 lamdas to read and write to dynamo respectively
         Function readFunction = Function.Builder.create(this, "readLambda")
         .runtime(Runtime.NODEJS_10_X)
@@ -72,17 +73,17 @@ public class HoverSpaceStack extends Stack {
         
         //can the following code be refactored? Yes. Will I refactor it? Maybe.
         //Endpoint won't work right now because the returned response is not compatible with apig (for now)
-        
-        final RestApi api = RestApi.Builder
-        .create(this, "writeEndpoint")
-        .build();
 
         final List<MethodResponse> methodResponses = new ArrayList<>();
         methodResponses.add(MethodResponse.builder()
         .statusCode("200")
         .build());
+        
+        final RestApi apiWrite = RestApi.Builder
+        .create(this, "writeEndpoint")
+        .build();
 
-        api.getRoot()
+        apiWrite.getRoot()
         .addResource("data")
         .addMethod("POST", LambdaIntegration.Builder
                         .create(writeFunction)
@@ -90,5 +91,19 @@ public class HoverSpaceStack extends Stack {
                         MethodOptions.builder()
                         .methodResponses(methodResponses)
                         .build());
+        
+        final RestApi apiRead = RestApi.Builder
+        .create(this, "readEndpoint")
+        .build();
+
+        apiRead.getRoot()
+        .addResource("data")
+        .addMethod("POST", LambdaIntegration.Builder
+                        .create(readFunction)
+                        .build(),
+                        MethodOptions.builder()
+                        .methodResponses(methodResponses)
+                        .build());
+        
     }
 }
